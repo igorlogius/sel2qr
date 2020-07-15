@@ -1,10 +1,27 @@
 {
-    "author": "igorlogius",
-    "background": { "scripts": [ "background.js" ] },
-    "description": "display qr code for selected text, link targets or image src attributes or current tab url for easy sharing between devices with qrcode scanner",
-    "manifest_version": 2,
-    "name": "sel2qr",
-    "page_action": { "show_matches": ["<all_urls>"], "browser_style": true, "default_icon": "icon.png", "default_popup": "popup.html" },
-    "permissions": [ "activeTab", "menus" ],
-    "version": "1.0.0"
+  "author": "igorlogius",
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "description": "display qr code for selected text, link target, image src or tab url for sharing between devices with qrcode scanner",
+  "icons": {
+    "252": "icon.png"
+  },
+  "manifest_version": 2,
+  "name": "sel2qr",
+  "page_action": {
+    "browser_style": true,
+    "default_icon": "icon.png",
+    "default_popup": "popup.html",
+    "show_matches": [
+      "<all_urls>"
+    ]
+  },
+  "permissions": [
+    "activeTab",
+    "menus"
+  ],
+  "version": "1.0.2"
 }
