@@ -1,23 +1,42 @@
 
 const extId = 'sel2qr';
+
 let clickDataStore;
 
 function connected(p) {
-	p.postMessage(clickDataStore);
-	p.onMessage.addListener(function(m) {
-		if(m === 'clear') {
-			delete clickDataStore;
-			clickDataStore = undefined;
+	p.onMessage.addListener(async function(m) {
+		try {
+			console.log(m,JSON.stringify(clickDataStore,null,4));
+			if(typeof clickDataStore === 'undefined') {
+				const selobj = await browser.tabs.executeScript({code: `window.getSelection().toString()`});
+				console.log(JSON.stringify(selobj));
+				//if(typeof selobj[0] === 'string' && selboj[0] !== '') { 
+					p.postMessage({"src": "pageAction", "data" : selobj[0]});
+				//}
+			}else{
+				p.postMessage(clickDataStore);
+				clickDataStore = undefined
+			}
+
+		}catch(e) {
+			console.error(e);
 		}
 	});
+
 }
 
 function onMenuClicked(clickData, tab) { 
-	if (typeof clickData.menuItemId === 'string' 
-		&& clickData.menuItemId == extId) {
-		clickDataStore = clickData;
+
+	try {
 		browser.pageAction.openPopup();
+		if (typeof clickData.menuItemId === 'string' 
+			&& clickData.menuItemId == extId) {
+			clickDataStore = {"src": "menu", "data": clickData};
+		}
+	}catch(e){
+		console.error(e);
 	}
+
 }
 
 browser.menus.create({   
