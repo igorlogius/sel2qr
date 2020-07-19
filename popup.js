@@ -1,72 +1,59 @@
 
+const extId = 'sel2qr';
+
+// establish connection with background.js 
 var conPort = browser.runtime.connect({name:"port-from-popup"});
 
-// send message to background script to aquire selection 
+// send open message to background.js to trigger onMessage 
 conPort.postMessage("open");
 
 async function onMessage(m) {
 
-			let value = '';
-			let noSelection = true;
+	let value = '';
 
-	try {
-		console.log(JSON.stringify(m));
-		if(m['src'] === 'menu') {
-
-
-			m = m['data'];
-
-			console.log(typeof m);
-
-			// Order
-			if(typeof m === 'object') {
-				for(let b of ['selectionText', 'linkUrl', 'srcUrl', 'pageUrl' ]){
-					if(typeof m[b] === 'string' && m[b].trim() !== ''){
-						value = m[b].trim();
-						noSelection = false;
-						console.log('value', value);
-						break;
-					}
-				}
+	if ( typeof m === 'object') {
+		//  1. text, 2. linkUrl (a) , 3. srcUrl (img)
+		for(let b of ['selectionText', 'linkUrl', 'srcUrl' ]){
+			if(typeof m[b] === 'string' && m[b].trim() !== ''){
+				value = m[b].trim();
+				break;
 			}
-			/*
-			if(noSelection === true){
-				// Fallback to tab url
-				let tabs = await browser.tabs.query({active: true, currentWindow: true});
-
-				if(!Array.isArray(tabs)){ throw 'tabs is not an array'; }
-				if(tabs.length < 1) { throw 'tabs length is less that 1'; }
-				if(typeof tabs[0].url !== 'string') { throw 'tab url is not a string'; }
-
-				value = tabs[0].url;
-			}*/
-		}else if(m['src'] === 'pageAction') {
-
-			value = m['data'].trim();
-
 		}
-		// clear previous selection
 
+	} else if (typeof m === 'undefined') {
+		let tabs = await browser.tabs.query({active: true, currentWindow: true});
+		value = tabs[0].url;
+	}
 
-		new QRious({
-			background: "white",
-			backgroundAlpha: 1.0,
-			element: document.getElementById('qr'),
-			foreground: "black",
-			foregroundAlpha: 1.0,
-			level: "L",
-			mime: "image/png",
-			size: window.innerWidth,
-			value: value
+	if(value === ''){
+
+		// close the popup window
+		window.close();
+
+		browser.notifications.create(extId, {
+			"type": "basic",
+			"iconUrl": browser.runtime.getURL("icon.png"),
+			"title":  "Invalid Selection", 
+			"message": "Hint: Try selecting a link (<a>), image (<img>) or some text"
 		});
 
-		console.log('qr value', value);
-
-	}catch(e){
-		console.error(e);
+		return;
 	}
+
+	new QRious({
+		background: "white",
+		backgroundAlpha: 1.0,
+		element: document.getElementById('qr'),
+		foreground: "black",
+		foregroundAlpha: 1.0,
+		level: "L",
+		mime: "image/png",
+		size: window.innerWidth,
+		value: value
+	});
 
 }
 
 conPort.onMessage.addListener(onMessage);
+
 
